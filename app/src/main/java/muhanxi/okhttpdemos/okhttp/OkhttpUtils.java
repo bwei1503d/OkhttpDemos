@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import muhanxi.okhttpdemos.LoggingInterceptor;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -39,6 +40,7 @@ public class OkhttpUtils {
                     .readTimeout(20, TimeUnit.SECONDS)
                     .writeTimeout(20,TimeUnit.SECONDS)
                     .connectTimeout(20,TimeUnit.SECONDS)
+                    .addInterceptor(new LoggingInterceptor())
                     .build();
         }
         return okhttpUtils ;
