@@ -50,20 +50,25 @@ public class OkhttpUtils {
 
 
     public void asy(Map<String,String> params,String url,AbstractUiCallBack callBack){
+        Request request = null ;
 
-
-        FormBody.Builder builder = new FormBody.Builder() ;
-
-        for(Map.Entry<String,String> entry : params.entrySet()){
-            builder.add(entry.getKey(),entry.getValue());
+        if(params != null){
+            FormBody.Builder builder = new FormBody.Builder() ;
+            for(Map.Entry<String,String> entry : params.entrySet()){
+                builder.add(entry.getKey(),entry.getValue());
+            }
+            FormBody body =  builder.build();
+            request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .build();
+        } else {
+            request = new Request.Builder()
+                    .url(url)
+                    .build();
         }
 
-        FormBody body =  builder.build();
 
-        Request request = new Request.Builder()
-                .url(url)
-                .post(body)
-                .build();
 
         client.newCall(request).enqueue(callBack);
 
