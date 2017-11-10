@@ -1,13 +1,31 @@
 package muhanxi.okhttpdemos;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.view.View;
+import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Type;
+import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import muhanxi.okhttpdemos.okhttp.AbstractUiCallBack;
+import muhanxi.okhttpdemos.okhttp.OkhttpUtils;
 import okhttp3.Cache;
 import okhttp3.CacheControl;
 import okhttp3.Call;
@@ -20,7 +38,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import static android.os.Build.VERSION_CODES.O;
+import static muhanxi.okhttpdemos.SDCardUtils.copyStream;
 
 public class MainActivity extends Activity {
 
@@ -28,13 +46,136 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        get();
+//        get();
 
 
+
+//      Type type =    MainActivity.class.getGenericSuperclass() ;
+
+
+
+//        test();
+
+
+        findViewById(R.id.xiangce).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                toPhoto();
+            }
+        });
+
+
+
+        findViewById(R.id.xiangce).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                toCamera();
+
+            }
+        });
 
 
 
     }
+
+
+
+    private void test(){
+
+
+        Map<String,String> map = new HashMap();
+        String url = "http://qhb.2dyt.com/Bwei/news" ;
+        map.put("type","7");
+        map.put("postkey","109rff1d1AK");
+
+
+//        OkhttpUtils.asy(map, url, new AbstractUiCallBack<Bean>() {
+//
+//            @Override
+//            public void success(Bean bean) {
+//
+//                Toast.makeText(MainActivity.this,bean.toString(),Toast.LENGTH_SHORT).show();
+//            }
+//
+//            @Override
+//            public void failure(Exception e) {
+//
+//            }
+//        });
+
+
+
+        OkhttpUtils.getInstance().asy(map, url, new AbstractUiCallBack<Bean>() {
+            @Override
+            public void success(Bean o) {
+
+            }
+
+            @Override
+            public void failure(Exception e) {
+
+            }
+        });
+
+
+
+    }
+
+
+
+
+    private void postFile(){
+
+        String url = "https://www.zhaoapi.cn/file/upload" ;
+
+        Map<String,String> map = new HashMap<>();
+        map.put("uid","100");
+
+//        OkhttpUtils.postFile(map,url,new AbstractUiCallBack<>());
+
+    }
+
+
+    static final int INTENTFORCAMERA = 1 ;
+    static final int INTENTFORPHOTO = 2 ;
+
+    /**
+     * 打开相册
+     */
+    public void toPhoto(){
+        try {
+            createLocalPhotoName();
+            Intent getAlbum = new Intent(Intent.ACTION_GET_CONTENT);
+            getAlbum.setType("image/*");
+            startActivityForResult(getAlbum, INTENTFORPHOTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     *  打开相机
+     */
+    public void toCamera(){
+        try {
+            Intent intentNow = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            Uri uri = Uri.fromFile(SDCardUtils.getMyFaceFile(createLocalPhotoName())) ;
+            intentNow.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+            startActivityForResult(intentNow, INTENTFORCAMERA);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String LocalPhotoName;
+    public String createLocalPhotoName() {
+        LocalPhotoName = System.currentTimeMillis() + "face.jpg";
+        return  LocalPhotoName ;
+    }
+
+
 
 
 
@@ -310,6 +451,139 @@ public class MainActivity extends Activity {
 
         OkHttpClient okHttpClient2 =   client.newBuilder().writeTimeout(20, TimeUnit.SECONDS).build();
 
+
+
+    }
+
+    int width;
+    int height ;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+            case INTENTFORPHOTO:
+                //相册
+
+                try {
+                    // 必须这样处理，不然在4.4.2手机上会出问题
+                    Uri originalUri = data.getData();
+                    File f = null;
+                    if (originalUri != null) {
+                        f = new File(SDCardUtils.photoCacheDir, LocalPhotoName);
+                        String[] proj = {MediaStore.Images.Media.DATA};
+                        Cursor actualimagecursor =  this.getContentResolver().query(originalUri, proj, null, null, null);
+                        if (null == actualimagecursor) {
+                            if (originalUri.toString().startsWith("file:")) {
+                                File file = new File(originalUri.toString().substring(7, originalUri.toString().length()));
+                                if(!file.exists()){
+                                    //地址包含中文编码的地址做utf-8编码
+                                    originalUri = Uri.parse(URLDecoder.decode(originalUri.toString(),"UTF-8"));
+                                    file = new File(originalUri.toString().substring(7, originalUri.toString().length()));
+                                }
+                                FileInputStream inputStream = new FileInputStream(file);
+                                FileOutputStream outputStream = new FileOutputStream(f);
+                                copyStream(inputStream, outputStream);
+                            }
+                        } else {
+                            // 系统图库
+                            int actual_image_column_index = actualimagecursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                            actualimagecursor.moveToFirst();
+                            String img_path = actualimagecursor.getString(actual_image_column_index);
+                            if (img_path == null) {
+                                InputStream inputStream = this.getContentResolver().openInputStream(originalUri);
+                                FileOutputStream outputStream = new FileOutputStream(f);
+                                copyStream(inputStream, outputStream);
+                            } else {
+                                File file = new File(img_path);
+                                FileInputStream inputStream = new FileInputStream(file);
+                                FileOutputStream outputStream = new FileOutputStream(f);
+                                copyStream(inputStream, outputStream);
+                            }
+
+                        }
+                        Bitmap bitmap = ImageResizeUtils.resizeImage(f.getAbsolutePath(),720);
+                        width = bitmap.getWidth();
+                        height = bitmap.getHeight();
+                        FileOutputStream fos = new FileOutputStream(f.getAbsolutePath());
+                        if (bitmap != null) {
+                            if (bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fos)) {
+                                fos.close();
+                                fos.flush();
+                            }
+                            if (!bitmap.isRecycled()) {
+                                bitmap.isRecycled();
+                            }
+
+//                            uploadFile(f);
+
+                        }
+
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+
+                }
+
+
+                break;
+            case INTENTFORCAMERA:
+//                相机
+                try {
+
+                    //file 就是拍照完 得到的原始照片
+                    File file = new File(SDCardUtils.photoCacheDir, LocalPhotoName);
+                    Bitmap bitmap = ImageResizeUtils.resizeImage(file.getAbsolutePath(), 720);
+                    width = bitmap.getWidth();
+                    height = bitmap.getHeight();
+                    FileOutputStream fos = new FileOutputStream(file.getAbsolutePath());
+                    if (bitmap != null) {
+                        if (bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fos)) {
+                            fos.close();
+                            fos.flush();
+                        }
+                        if (!bitmap.isRecycled()) {
+                            //通知系统 回收bitmap
+                            bitmap.isRecycled();
+                        }
+                        uploadFile(file);
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+
+                break;
+        }
+
+
+    }
+
+
+    private void uploadFile(File file){
+        String url = "http://qhb.2dyt.com/Bwei/upload" ;
+
+//        String url = "https://www.zhaoapi.cn/file/upload";
+
+        Map<String,String> map = new HashMap<>();
+        map.put("uid","100");
+
+
+        OkhttpUtils.postFile(map,url,file,new AbstractUiCallBack<UploadBean>(){
+            @Override
+            public void success(UploadBean bean) {
+
+                Toast.makeText(MainActivity.this,"upload success",Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void failure(Exception e) {
+
+            }
+        });
 
 
     }
