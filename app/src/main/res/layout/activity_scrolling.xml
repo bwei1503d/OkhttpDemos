@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".MainActivity">
+
+    <!--标题栏,设置的layout_scrollFlags有如下几种选项：
+      scroll: 所有想滚动出屏幕的view都需要设置这个flag-没有设置这个flag的view将被固定在屏幕顶部。
+      enterAlways: 这个flag让任意向下的滚动都会导致该view变为可见,适用于快速“返回模式”。
+      enterAlwaysCollapsed: 当你的视图已经设置minHeight属性又使用此标志时，
+                            你的视图只能以最小高度进入，只有当滚动视图到达顶部时才扩大到完整高度。
+      exitUntilCollapsed: 滚动退出屏幕，最后折叠在顶端。-->
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!--替换actionbar的布局,位置可以任意,可以插入布局和在代码中插入菜单
+       如果是在布局中设置标题和图标,切记引进一个命名空间,然后在该命名空间下设置属性-->
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:background="#ffcccc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_scrollFlags="scroll|enterAlways">
+        </android.support.v7.widget.Toolbar>
+        <!--选项卡,具体的参数信息可以参考前面的文章-->
+        <android.support.design.widget.TabLayout
+            android:id="@+id/tablayout"
+            android:background="#ffffff"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:tabIndicatorColor="#0000ff"
+            app:tabTextColor="#000000"
+            app:tabMode="scrollable"
+            app:tabSelectedTextColor="#ff0000">
+        </android.support.design.widget.TabLayout>
+    </android.support.design.widget.AppBarLayout>
+
+
+
+
+
+    <!--包含可滑动的布局内容(RecyclerView,NestedScrollView,不支持ListView，ScrollView，ViewPager),但是可以在NestedScrollView中使用
+        必须要设置app:layout_behavior="@string/appbar_scrolling_view_behavior" (布局行为)
+        属性来告知CoordinatorLayout该组件是带有滑动行为的组件,
+        然后CoordinatorLayout在接受到滑动时会通知AppBarLayout中可滑动的Toolbar可以滑出屏幕-->
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerview"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </android.support.v7.widget.RecyclerView>
+
+</android.support.design.widget.CoordinatorLayout>

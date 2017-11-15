@@ -57,23 +57,49 @@ public class MainActivity extends Activity {
 //        test();
 
 
-        findViewById(R.id.xiangce).setOnClickListener(new View.OnClickListener() {
+//        findViewById(R.id.xiangce).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                toPhoto();
+//            }
+//        });
+//
+//
+//
+//        findViewById(R.id.xiangce).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//
+//                toCamera();
+//
+//            }
+//        });
+
+
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new LoggingInterceptor())
+                .build();
+        Request request = new Request.Builder()
+                .url("http://120.27.23.105/product/searchProducts?keywords=笔记本&page=1")
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
             @Override
-            public void onClick(View view) {
-                toPhoto();
+            public void onFailure(Call call, IOException e) {
+
+                System.out.println("e = " + e);
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                String result = response.body().string() ;
+
+                System.out.println("result = " + result);
+
             }
         });
 
-
-
-        findViewById(R.id.xiangce).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                toCamera();
-
-            }
-        });
 
 
 
