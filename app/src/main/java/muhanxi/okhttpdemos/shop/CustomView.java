@@ -107,6 +107,9 @@ public class CustomView extends LinearLayout {
         this.listener = listener;
     }
 
+    /**
+     * 加减号 点击事件
+     */
     public interface ClickListener {
         public void click(int count);
     }

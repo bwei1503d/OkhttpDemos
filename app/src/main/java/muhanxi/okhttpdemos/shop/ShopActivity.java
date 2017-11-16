@@ -18,6 +18,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import muhanxi.okhttpdemos.R;
 
 public class ShopActivity extends Activity {
@@ -47,7 +48,10 @@ public class ShopActivity extends Activity {
 
         getData();
 
-        manager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
+        // 1 为选中  2 选中
+        thirdAllselect.setTag(1);
+
+        manager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 
         adapter = new ShopAdapter(this);
 
@@ -57,31 +61,72 @@ public class ShopActivity extends Activity {
         adapter.add(mAllOrderList);
 
 
-
-
         adapter.setCheckBoxListener(new ShopAdapter.CheckBoxListener() {
             @Override
-            public void check(int position, int count, boolean check) {
+            public void check(int position, int count, boolean check,List<ShopBean.OrderDataBean.CartlistBean> list) {
 
-                System.out.println("position = " + position);
-                System.out.println("count = " + count);
-                System.out.println("check = " + check);
 
+                sum(list);
             }
         });
 
+        adapter.setCustomViewListener(new ShopAdapter.CustomViewListener() {
+            @Override
+            public void click(int count,List<ShopBean.OrderDataBean.CartlistBean> list) {
+                sum(list);
+            }
+        });
 
+        adapter.setDelListener(new ShopAdapter.DelListener() {
+            @Override
+            public void del(int position,List<ShopBean.OrderDataBean.CartlistBean> list) {
+                sum(list);
+            }
+        });
 
 
     }
 
 
+    float price = 0;
+    int count;
+
+    /**
+     * 计算总价
+     * @param mAllOrderList
+     */
+    private void sum(List<ShopBean.OrderDataBean.CartlistBean> mAllOrderList) {
+        price = 0;
+        count = 0;
+
+        boolean allCheck = true ;
+        for (ShopBean.OrderDataBean.CartlistBean bean : mAllOrderList) {
+            if (bean.isCheck()) {
+                //得到总价
+                price += bean.getPrice() * bean.getCount();
+                //得到商品个数
+                count += bean.getCount();
+            }else {
+                // 只要有一个商品未选中，全选按钮 应该设置成 为选中
+                allCheck = false;
+            }
+        }
+
+        thirdTotalprice.setText("总价: " + price);
+        thirdTotalnum.setText("共" + count + "件商品");
+
+        if(allCheck){
+            thirdAllselect.setTag(2);
+            thirdAllselect.setBackgroundResource(R.drawable.shopcart_selected);
+        }else {
+            thirdAllselect.setTag(1);
+            thirdAllselect.setBackgroundResource(R.drawable.shopcart_unselected);
+        }
+
+    }
 
 
-
-
-
-    public void getData(){
+    public void getData() {
         try {
             //模拟网络请求
             InputStream inputStream = getAssets().open("shop.json");
@@ -129,5 +174,34 @@ public class ShopActivity extends Activity {
         }
 
         return sb.toString();
+    }
+
+    boolean select = false ;
+    @OnClick(R.id.third_allselect)
+    public void onClick() {
+        //全选按钮 点击事件
+
+        int tag = (Integer) thirdAllselect.getTag() ;
+
+
+        if(tag ==1){
+            thirdAllselect.setTag(2);
+            select = true;
+
+        } else {
+            thirdAllselect.setTag(1);
+            select = false;
+        }
+        for (ShopBean.OrderDataBean.CartlistBean bean : mAllOrderList) {
+            bean.setCheck(select);
+        }
+        adapter.notifyDataSetChanged();
+
+        sum(adapter.getList());
+
+
+
+
+
     }
 }
