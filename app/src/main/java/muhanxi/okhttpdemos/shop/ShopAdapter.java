@@ -19,7 +19,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import muhanxi.okhttpdemos.R;
 
-import static com.amap.api.col.s3.dc.G;
 
 /**
  * Created by muhanxi on 17/11/15.
@@ -59,7 +58,7 @@ public class ShopAdapter extends RecyclerView.Adapter<ShopAdapter.IViewHolder> {
 
         //防止checkbox 滑动 错乱
         holder.checkbox.setChecked(list.get(position).isCheck());
-
+        holder.customviewid.setEditText(list.get(position).getCount());
         holder.danjia.setText(list.get(position).getPrice()+"");
 
         ImageLoader.getInstance().displayImage(list.get(position).getDefaultPic(),holder.shopface);

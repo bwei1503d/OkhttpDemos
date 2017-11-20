@@ -40,6 +40,7 @@ public class OkhttpUtils {
                     .readTimeout(20, TimeUnit.SECONDS)
                     .writeTimeout(20,TimeUnit.SECONDS)
                     .connectTimeout(20,TimeUnit.SECONDS)
+                    //添加拦截器
                     .addInterceptor(new LoggingInterceptor())
                     .build();
         }
@@ -51,10 +52,17 @@ public class OkhttpUtils {
     private static OkHttpClient client ;
 
 
+    /**
+     *
+     * @param params
+     * @param url
+     * @param callBack
+     */
     public void asy(Map<String,String> params,String url,AbstractUiCallBack callBack){
         Request request = null ;
 
         if(params != null){
+            // post 请求
             FormBody.Builder builder = new FormBody.Builder() ;
             for(Map.Entry<String,String> entry : params.entrySet()){
                 builder.add(entry.getKey(),entry.getValue());
@@ -65,6 +73,7 @@ public class OkhttpUtils {
                     .post(body)
                     .build();
         } else {
+            // get 请求
             request = new Request.Builder()
                     .url(url)
                     .build();

@@ -2,6 +2,8 @@ package muhanxi.okhttpdemos.shop;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,16 +46,17 @@ public class CustomView extends LinearLayout {
                 //减号
                 try {
                     String content =  editText.getText().toString().trim() ;
+                    int count =  Integer.valueOf(content);
 
-                    int count =  Integer.valueOf(content)-1;
-                    mCount = count;
                     if(count > 1){
-                        editText.setText(count+"");
+                        mCount = count-1;
+                        editText.setText(mCount+"");
+                        if(listener != null){
+                            listener.click(mCount);
+                        }
                     }
 
-                    if(listener != null){
-                        listener.click(count);
-                    }
+
                 } catch (NumberFormatException e) {
                     e.printStackTrace();
                 }
@@ -83,6 +86,24 @@ public class CustomView extends LinearLayout {
         });
 
 
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+
         addView(view);
 
 
@@ -90,6 +111,10 @@ public class CustomView extends LinearLayout {
 
     }
 
+
+    public void setEditText(int count){
+        editText.setText(count+"");
+    }
 
     public int getCurrentCount(){
 

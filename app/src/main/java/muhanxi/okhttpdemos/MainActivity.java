@@ -75,31 +75,49 @@ public class MainActivity extends Activity {
 //            }
 //        });
 
+//
+//
+//        OkHttpClient client = new OkHttpClient.Builder()
+//                .addInterceptor(new LoggingInterceptor())
+//                .build();
+//        Request request = new Request.Builder()
+//                .url("http://120.27.23.105/product/searchProducts?keywords=笔记本&page=1")
+//                .build();
+//
+//        client.newCall(request).enqueue(new Callback() {
+//            @Override
+//            public void onFailure(Call call, IOException e) {
+//
+//                System.out.println("e = " + e);
+//            }
+//
+//            @Override
+//            public void onResponse(Call call, final Response response) throws IOException {
+//                String result = response.body().string() ;
+//
+//                System.out.println("result = " + result);
+//
+//            }
+//        });
 
 
-        OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(new LoggingInterceptor())
-                .build();
-        Request request = new Request.Builder()
-                .url("http://120.27.23.105/product/searchProducts?keywords=笔记本&page=1")
-                .build();
 
-        client.newCall(request).enqueue(new Callback() {
+        Map<String,String> map = new HashMap<>();
+        map.put("uid","71");
+        map.put("status","1");
+
+        OkhttpUtils.getInstance().asy(map, "https://www.zhaoapi.cn/product/getOrders", new AbstractUiCallBack<OrderBean>() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void success(OrderBean o) {
 
-                System.out.println("e = " + e);
+                System.out.println("o = " + o);
             }
 
             @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                String result = response.body().string() ;
-
-                System.out.println("result = " + result);
+            public void failure(Exception e) {
 
             }
         });
-
 
 
 

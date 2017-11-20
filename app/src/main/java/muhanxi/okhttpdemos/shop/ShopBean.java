@@ -92,6 +92,7 @@ public class ShopBean {
             private Object size;
             private int price;
             private int count;
+            //商品的选中 属性
             private boolean check;
 
             //商品是否被选中

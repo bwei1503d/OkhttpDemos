@@ -1,34 +1,46 @@
 package muhanxi.okhttpdemos;
 
 import java.io.IOException;
+import java.util.HashMap;
 
+import okhttp3.FormBody;
 import okhttp3.Interceptor;
 import okhttp3.MultipartBody;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class LoggingInterceptor implements Interceptor {
+
+
   @Override public Response intercept(Interceptor.Chain chain) throws IOException {
+    //首先取到Request
     Request request = chain.request();
+    Response response = null;
+    Request requestProcess = null ;
+    if("GET".equals(request.method())){
+      String url =  request.url().toString() + "&source=android";
+      Request.Builder builder =  request.newBuilder() ;
+      builder.get().url(url);
+      requestProcess =  builder.build();
+      response = chain.proceed(requestProcess);
+    } else {
+      FormBody.Builder builder = new FormBody.Builder() ;
+      RequestBody requestBody =  request.body() ;
+      if(requestBody instanceof FormBody){
+        FormBody formBody = (FormBody)requestBody ;
+        for (int i=0;i<formBody.size();i++){
+          builder.add(formBody.encodedName(i),formBody.encodedValue(i));
+        }
+        builder.add("source","android");
+      }
+       requestProcess =  request.newBuilder().url(request.url().toString()).post(builder.build()).build() ;
+      response = chain.proceed(requestProcess);
+    }
 
-    String url =  request.url().toString() + "&source=android";
 
-    Request.Builder builder =  request.newBuilder() ;
-//    builder.build().url().toString();
-    builder.get().url(url);
-    Request request1 =  builder.build();
 
-    long t1 = System.nanoTime();
-//    logger.info(String.format("Sending request %s on %s%n%s",
-//        request.url(), chain.connection(), request.headers()));
 
-    Response response = chain.proceed(request1);
-
-    long t2 = System.nanoTime();
-//    logger.info(String.format("Received response for %s in %.1fms%n%s",
-//        response.request().url(), (t2 - t1) / 1e6d, response.headers()));
-
-    System.out.println("t2 = " + (t2-t1));
     return response;
   }
 }
